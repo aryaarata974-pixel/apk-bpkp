@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Konsultasi extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'audiens_id',
+        'konsultan_id',
+        'status',
+        'disembunyikan_oleh_audiens',
+        'disembunyikan_oleh_konsultan',
+    ];
+
+    public function audiens()
+    {
+        return $this->belongsTo(User::class, 'audiens_id');
+    }
+
+    public function konsultan()
+    {
+        return $this->belongsTo(User::class, 'konsultan_id');
+    }
+
+    public function pesans()
+    {
+        return $this->hasMany(Pesan::class)->orderBy('created_at');
+    }
+
+    public function pesanTerakhir()
+    {
+        return $this->hasOne(Pesan::class)->latestOfMany();
+    }
+}
