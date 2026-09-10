@@ -16,12 +16,22 @@ class KonsultasiController extends Controller
             403
         );
 
-        $konsultasi->load(['pesans' => function ($query) use ($user) {
+        $batasWaktu = $user->id === $konsultasi->audiens_id
+            ? $konsultasi->dibersihkan_audiens_pada
+            : $konsultasi->dibersihkan_konsultan_pada;
+
+        $konsultasi->load(['pesans' => function ($query) use ($user, $batasWaktu) {
             $query->where(function ($q) use ($user) {
                 $q->where('disembunyikan_oleh_pengirim', false)
                   ->orWhere('pengirim_id', '!=', $user->id);
-            })->orderBy('created_at');
-        }, 'pesans.pengirim', 'audiens', 'konsultan']);
+            });
+
+            if ($batasWaktu) {
+                $query->where('created_at', '>', $batasWaktu);
+            }
+
+            $query->orderBy('created_at');
+        }, 'pesans.pengirim', 'pesans.balasKe.pengirim', 'audiens', 'konsultan']);
 
         return view('konsultasi.show', compact('konsultasi'));
     }

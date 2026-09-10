@@ -15,6 +15,13 @@ class Konsultasi extends Model
         'status',
         'disembunyikan_oleh_audiens',
         'disembunyikan_oleh_konsultan',
+        'dibersihkan_audiens_pada',
+        'dibersihkan_konsultan_pada',
+    ];
+
+    protected $casts = [
+        'dibersihkan_audiens_pada' => 'datetime',
+        'dibersihkan_konsultan_pada' => 'datetime',
     ];
 
     public function audiens()

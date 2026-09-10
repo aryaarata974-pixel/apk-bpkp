@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Events\AktivitasKonsultasi;
-use App\Events\ChatDibersihkan;
 use App\Events\PesanDikirim;
+use App\Models\ActivityLog;
 use App\Models\Konsultasi;
 use App\Models\Pesan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PesanController extends Controller
 {
@@ -22,14 +23,38 @@ class PesanController extends Controller
         );
 
         $validated = $request->validate([
-            'isi_pesan' => 'required|string|max:2000',
+            'isi_pesan' => 'nullable|string|max:2000',
+            'balas_ke_id' => 'nullable|exists:pesans,id',
+            'file' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip',
         ]);
 
-        $pesan = Pesan::create([
+        if (empty($validated['isi_pesan']) && !$request->hasFile('file')) {
+            return response()->json(['success' => false, 'message' => 'Pesan atau file wajib diisi.'], 422);
+        }
+
+        if (!empty($validated['balas_ke_id'])) {
+            $pesanAsal = Pesan::find($validated['balas_ke_id']);
+            abort_if(!$pesanAsal || $pesanAsal->konsultasi_id !== $konsultasi->id, 422);
+        }
+
+        $dataPesan = [
             'konsultasi_id' => $konsultasi->id,
             'pengirim_id' => $user->id,
-            'isi_pesan' => $validated['isi_pesan'],
-        ]);
+            'isi_pesan' => $validated['isi_pesan'] ?? null,
+            'balas_ke_id' => $validated['balas_ke_id'] ?? null,
+        ];
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('chat_files', 'public');
+
+            $dataPesan['file_path'] = $path;
+            $dataPesan['file_nama'] = $file->getClientOriginalName();
+            $dataPesan['file_tipe'] = $file->getMimeType();
+        }
+
+        $pesan = Pesan::create($dataPesan);
+        $pesan->load('balasKe.pengirim');
 
         $updateData = [];
 
@@ -49,12 +74,25 @@ class PesanController extends Controller
             $konsultasi->update($updateData);
         }
 
+        ActivityLog::catat($user->id, 'Kirim Pesan', $user->name . ' mengirim pesan di konsultasi #' . $konsultasi->id);
+
         broadcast(new PesanDikirim($pesan))->toOthers();
 
         $penerimaId = $user->id === $konsultasi->audiens_id ? $konsultasi->konsultan_id : $konsultasi->audiens_id;
         broadcast(new AktivitasKonsultasi($penerimaId));
 
-        return response()->json(['success' => true, 'id' => $pesan->id]);
+        return response()->json([
+            'success' => true,
+            'id' => $pesan->id,
+            'file_url' => $pesan->file_path ? asset('storage/' . $pesan->file_path) : null,
+            'file_nama' => $pesan->file_nama,
+            'file_tipe' => $pesan->file_tipe,
+            'balas_ke' => $pesan->balasKe ? [
+                'id' => $pesan->balasKe->id,
+                'isi_pesan' => $pesan->balasKe->isi_pesan,
+                'pengirim_nama' => $pesan->balasKe->pengirim->name,
+            ] : null,
+        ]);
     }
 
     public function destroy(Konsultasi $konsultasi, Pesan $pesan)
@@ -78,9 +116,11 @@ class PesanController extends Controller
             403
         );
 
-        $konsultasi->pesans()->delete();
-
-        broadcast(new ChatDibersihkan($konsultasi->id))->toOthers();
+        if ($user->id === $konsultasi->audiens_id) {
+            $konsultasi->update(['dibersihkan_audiens_pada' => now()]);
+        } else {
+            $konsultasi->update(['dibersihkan_konsultan_pada' => now()]);
+        }
 
         return response()->json(['success' => true]);
     }

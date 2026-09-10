@@ -6,6 +6,10 @@ use App\Http\Controllers\PesanController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\KategoriKonsultanController;
 use App\Http\Controllers\Admin\KonsultanProfilController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\LaporanController;
+use App\Http\Controllers\Admin\PemantauanController;
 use App\Http\Controllers\Konsultan\DashboardController as KonsultanDashboardController;
 use App\Http\Controllers\Audiens\DashboardController as AudiensDashboardController;
 use App\Http\Controllers\Audiens\KonsultasiController as AudiensKonsultasiController;
@@ -31,7 +35,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Halaman chat konsultasi (dipakai audiens & konsultan)
     Route::get('/konsultasi/{konsultasi}', [KonsultasiController::class, 'show'])->name('konsultasi.show');
     Route::delete('/konsultasi/{konsultasi}', [KonsultasiController::class, 'destroy'])->name('konsultasi.destroy');
     Route::post('/konsultasi/{konsultasi}/pesan', [PesanController::class, 'store'])->name('pesan.store');
@@ -43,6 +46,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::resource('kategori', KategoriKonsultanController::class);
         Route::resource('konsultan-profil', KonsultanProfilController::class);
+        Route::resource('users', UserController::class)->except(['create', 'store', 'show']);
+        Route::get('/aktivitas', [ActivityLogController::class, 'index'])->name('aktivitas.index');
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/pemantauan', [PemantauanController::class, 'index'])->name('pemantauan.index');
+        Route::get('/pemantauan/{konsultasi}', [PemantauanController::class, 'show'])->name('pemantauan.show');
     });
 
     // Konsultan

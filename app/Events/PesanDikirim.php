@@ -18,7 +18,7 @@ class PesanDikirim implements ShouldBroadcast
 
     public function __construct(Pesan $pesan)
     {
-        $this->pesan = $pesan->load('pengirim');
+        $this->pesan = $pesan->load('pengirim', 'balasKe.pengirim');
     }
 
     public function broadcastOn(): array
@@ -41,6 +41,14 @@ class PesanDikirim implements ShouldBroadcast
             'pengirim_id' => $this->pesan->pengirim_id,
             'pengirim_nama' => $this->pesan->pengirim->name,
             'waktu' => $this->pesan->created_at->format('H:i'),
+            'file_url' => $this->pesan->file_path ? asset('storage/' . $this->pesan->file_path) : null,
+            'file_nama' => $this->pesan->file_nama,
+            'file_tipe' => $this->pesan->file_tipe,
+            'balas_ke' => $this->pesan->balasKe ? [
+                'id' => $this->pesan->balasKe->id,
+                'isi_pesan' => $this->pesan->balasKe->isi_pesan,
+                'pengirim_nama' => $this->pesan->balasKe->pengirim->name,
+            ] : null,
         ];
     }
 }

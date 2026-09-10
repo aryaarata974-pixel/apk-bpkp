@@ -13,7 +13,11 @@ class Pesan extends Model
         'konsultasi_id',
         'pengirim_id',
         'isi_pesan',
-         'disembunyikan_oleh_pengirim',
+        'disembunyikan_oleh_pengirim',
+        'balas_ke_id',
+        'file_path',
+        'file_nama',
+        'file_tipe',
     ];
 
     public function konsultasi()
@@ -25,4 +29,23 @@ class Pesan extends Model
     {
         return $this->belongsTo(User::class, 'pengirim_id');
     }
-}
+
+    public function balasKe()
+    {
+        return $this->belongsTo(Pesan::class, 'balas_ke_id');
+    }
+
+        public function isGambar(): bool
+    {
+        if ($this->file_tipe && str_starts_with($this->file_tipe, 'image/')) {
+            return true;
+        }
+
+        if ($this->file_nama) {
+            $ext = strtolower(pathinfo($this->file_nama, PATHINFO_EXTENSION));
+            return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+        }
+
+        return false;
+    }
+}            

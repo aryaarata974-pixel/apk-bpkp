@@ -32,6 +32,22 @@
                         class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
                         Kelola Profil Konsultan
                     </a>
+                    <a href="{{ route('admin.users.index') }}"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        Kelola Akun Pengguna
+                    </a>
+                    <a href="{{ route('admin.aktivitas.index') }}"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        Riwayat Penggunaan Sistem
+                    </a>
+                    <a href="{{ route('admin.laporan.index') }}"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        Cetak Laporan
+                    </a>
+                    <a href="{{ route('admin.pemantauan.index') }}"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                        Memantau Percakapan
+                    </a>
                 </div>
             </div>
         </div>
