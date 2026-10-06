@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PesanDibaca;
 use App\Models\Konsultasi;
+use App\Models\Pesan;
 use Illuminate\Support\Facades\Auth;
 
 class KonsultasiController extends Controller
@@ -33,6 +35,8 @@ class KonsultasiController extends Controller
             $query->orderBy('created_at');
         }, 'pesans.pengirim', 'pesans.balasKe.pengirim', 'audiens', 'konsultan']);
 
+        $this->tandaiDibaca($konsultasi, $user->id);
+
         return view('konsultasi.show', compact('konsultasi'));
     }
 
@@ -56,5 +60,31 @@ class KonsultasiController extends Controller
         }
 
         return back()->with('success', 'Konsultasi berhasil dihapus.');
+    }
+
+    public function selesaikan(Konsultasi $konsultasi)
+    {
+        $user = Auth::user();
+
+        abort_unless(
+            $konsultasi->audiens_id === $user->id || $konsultasi->konsultan_id === $user->id,
+            403
+        );
+
+        $konsultasi->update(['status' => 'selesai']);
+
+        return back()->with('success', 'Konsultasi ditandai selesai.');
+    }
+
+    public function tandaiDibaca(Konsultasi $konsultasi, $userId)
+    {
+        $belumDibaca = $konsultasi->pesans
+            ->where('pengirim_id', '!=', $userId)
+            ->whereNull('dibaca_at');
+
+        if ($belumDibaca->isNotEmpty()) {
+            Pesan::whereIn('id', $belumDibaca->pluck('id'))->update(['dibaca_at' => now()]);
+            broadcast(new PesanDibaca($konsultasi->id, $userId))->toOthers();
+        }
     }
 }

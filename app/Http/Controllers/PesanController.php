@@ -22,6 +22,13 @@ class PesanController extends Controller
             403
         );
 
+        if ($konsultasi->status === 'selesai') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Konsultasi ini sudah selesai, tidak bisa mengirim pesan.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'isi_pesan' => 'nullable|string|max:2000',
             'balas_ke_id' => 'nullable|exists:pesans,id',

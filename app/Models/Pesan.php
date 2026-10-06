@@ -18,6 +18,11 @@ class Pesan extends Model
         'file_path',
         'file_nama',
         'file_tipe',
+        'dibaca_at',
+    ];
+
+    protected $casts = [
+        'dibaca_at' => 'datetime',
     ];
 
     public function konsultasi()
@@ -35,7 +40,7 @@ class Pesan extends Model
         return $this->belongsTo(Pesan::class, 'balas_ke_id');
     }
 
-        public function isGambar(): bool
+    public function isGambar(): bool
     {
         if ($this->file_tipe && str_starts_with($this->file_tipe, 'image/')) {
             return true;
@@ -48,4 +53,4 @@ class Pesan extends Model
 
         return false;
     }
-}            
+}

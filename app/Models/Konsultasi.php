@@ -13,6 +13,8 @@ class Konsultasi extends Model
         'audiens_id',
         'konsultan_id',
         'status',
+        'topik_id',
+        'topik_lainnya',
         'disembunyikan_oleh_audiens',
         'disembunyikan_oleh_konsultan',
         'dibersihkan_audiens_pada',
@@ -32,6 +34,11 @@ class Konsultasi extends Model
     public function konsultan()
     {
         return $this->belongsTo(User::class, 'konsultan_id');
+    }
+
+    public function topik()
+    {
+        return $this->belongsTo(Topik::class);
     }
 
     public function pesans()

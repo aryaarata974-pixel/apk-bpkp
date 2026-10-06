@@ -13,6 +13,7 @@ class KonsultanProfil extends Model
         'user_id',
         'kategori_id',
         'bio',
+        'foto_profil',
         'aktif',
     ];
 
