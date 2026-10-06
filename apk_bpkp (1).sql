@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Sep 08, 2026 at 12:14 AM
+-- Generation Time: Sep 10, 2026 at 06:08 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,31 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `aktivitas` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `keterangan` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+INSERT INTO `activity_logs` (`id`, `user_id`, `aktivitas`, `keterangan`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Memantau Percakapan', 'Admin memantau percakapan #12', '2026-09-10 02:26:13', '2026-09-10 02:26:13'),
+(2, 1, 'Memantau Percakapan', 'Admin memantau percakapan #10', '2026-09-10 02:26:25', '2026-09-10 02:26:25'),
+(3, 4, 'Login', 'yahahah (konsultan) login ke sistem', '2026-09-10 02:30:33', '2026-09-10 02:30:33'),
+(4, 4, 'Login', 'yahahah (konsultan) login ke sistem', '2026-09-10 02:40:38', '2026-09-10 02:40:38');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `cache`
 --
 
@@ -32,6 +57,14 @@ CREATE TABLE `cache` (
   `value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `expiration` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('laravel-cache-admin@pakbpkp.test|10.200.64.95', 'i:3;', 1788830287),
+('laravel-cache-admin@pakbpkp.test|10.200.64.95:timer', 'i:1788830287;', 1788830287);
 
 -- --------------------------------------------------------
 
@@ -173,6 +206,8 @@ CREATE TABLE `konsultasis` (
   `status` enum('menunggu','berlangsung','selesai') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'menunggu',
   `disembunyikan_oleh_audiens` tinyint(1) NOT NULL DEFAULT '0',
   `disembunyikan_oleh_konsultan` tinyint(1) NOT NULL DEFAULT '0',
+  `dibersihkan_audiens_pada` timestamp NULL DEFAULT NULL,
+  `dibersihkan_konsultan_pada` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -181,8 +216,10 @@ CREATE TABLE `konsultasis` (
 -- Dumping data for table `konsultasis`
 --
 
-INSERT INTO `konsultasis` (`id`, `audiens_id`, `konsultan_id`, `status`, `disembunyikan_oleh_audiens`, `disembunyikan_oleh_konsultan`, `created_at`, `updated_at`) VALUES
-(9, 3, 4, 'berlangsung', 0, 0, '2026-09-07 07:45:55', '2026-09-07 07:51:18');
+INSERT INTO `konsultasis` (`id`, `audiens_id`, `konsultan_id`, `status`, `disembunyikan_oleh_audiens`, `disembunyikan_oleh_konsultan`, `dibersihkan_audiens_pada`, `dibersihkan_konsultan_pada`, `created_at`, `updated_at`) VALUES
+(10, 5, 4, 'berlangsung', 0, 1, NULL, NULL, '2026-09-08 01:09:57', '2026-09-08 01:16:52'),
+(11, 6, 4, 'berlangsung', 0, 1, NULL, NULL, '2026-09-08 01:43:05', '2026-09-09 05:59:11'),
+(12, 3, 4, 'berlangsung', 0, 0, NULL, NULL, '2026-09-08 06:22:34', '2026-09-08 06:22:39');
 
 -- --------------------------------------------------------
 
@@ -210,7 +247,12 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (7, '2026_09_02_065539_create_konsultasis_table', 2),
 (8, '2026_09_02_065539_create_pesans_table', 2),
 (9, '2026_09_07_150115_add_disembunyikan_ke_pesans_table', 3),
-(10, '2026_09_07_152024_add_disembunyikan_ke_konsultasis_table', 4);
+(10, '2026_09_07_152024_add_disembunyikan_ke_konsultasis_table', 4),
+(11, '2026_09_08_091959_add_waktu_bersih_ke_konsultasis_table', 5),
+(12, '2026_09_08_094338_add_balas_ke_ke_pesans_table', 6),
+(13, '2026_09_09_142730_add_file_ke_pesans_table', 7),
+(14, '2026_09_10_100122_create_activity_logs_table', 8),
+(15, '2026_09_10_100507_add_last_login_at_ke_users_table', 8);
 
 -- --------------------------------------------------------
 
@@ -234,7 +276,11 @@ CREATE TABLE `pesans` (
   `id` bigint UNSIGNED NOT NULL,
   `konsultasi_id` bigint UNSIGNED NOT NULL,
   `pengirim_id` bigint UNSIGNED NOT NULL,
-  `isi_pesan` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `balas_ke_id` bigint UNSIGNED DEFAULT NULL,
+  `isi_pesan` text COLLATE utf8mb4_unicode_ci,
+  `file_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_nama` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `file_tipe` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `disembunyikan_oleh_pengirim` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -244,9 +290,27 @@ CREATE TABLE `pesans` (
 -- Dumping data for table `pesans`
 --
 
-INSERT INTO `pesans` (`id`, `konsultasi_id`, `pengirim_id`, `isi_pesan`, `disembunyikan_oleh_pengirim`, `created_at`, `updated_at`) VALUES
-(70, 9, 3, 'Test', 0, '2026-09-07 07:51:18', '2026-09-07 07:51:18'),
-(71, 9, 3, 'Alo', 1, '2026-09-07 07:56:13', '2026-09-07 07:56:27');
+INSERT INTO `pesans` (`id`, `konsultasi_id`, `pengirim_id`, `balas_ke_id`, `isi_pesan`, `file_path`, `file_nama`, `file_tipe`, `disembunyikan_oleh_pengirim`, `created_at`, `updated_at`) VALUES
+(100, 11, 6, NULL, 'halo arya daniel ganteng', NULL, NULL, NULL, 0, '2026-09-08 01:43:26', '2026-09-08 01:43:26'),
+(103, 11, 4, NULL, 'apala nih', NULL, NULL, NULL, 0, '2026-09-08 01:53:24', '2026-09-08 01:53:24'),
+(105, 11, 6, NULL, 'adakah tambahtambhanya', NULL, NULL, NULL, 0, '2026-09-08 02:12:03', '2026-09-08 02:12:03'),
+(108, 11, 6, NULL, 'makan', NULL, NULL, NULL, 0, '2026-09-08 03:00:27', '2026-09-08 03:00:27'),
+(109, 11, 4, NULL, 'makan apa', NULL, NULL, NULL, 0, '2026-09-08 05:51:47', '2026-09-08 05:51:47'),
+(111, 12, 3, NULL, 'Alo', NULL, NULL, NULL, 0, '2026-09-08 06:22:39', '2026-09-08 06:22:39'),
+(112, 12, 3, NULL, 'Selamat siang', NULL, NULL, NULL, 0, '2026-09-08 06:22:48', '2026-09-08 06:22:48'),
+(113, 12, 4, NULL, 'siang ada yang bisa saya bantu', NULL, NULL, NULL, 0, '2026-09-08 06:23:04', '2026-09-08 06:23:04'),
+(114, 12, 3, 113, 'Halo', NULL, NULL, NULL, 0, '2026-09-08 06:23:22', '2026-09-08 06:23:22'),
+(115, 12, 3, NULL, 'Tes', NULL, NULL, NULL, 0, '2026-09-08 06:24:17', '2026-09-08 06:24:17'),
+(116, 12, 3, NULL, 'Alo', NULL, NULL, NULL, 0, '2026-09-09 06:35:16', '2026-09-09 06:35:16'),
+(117, 12, 4, NULL, NULL, 'chat_files/MDS7EwvRwvnezUSz7yi5bkx3im5emQjDRI2Ynwuk.jpg', 'Gambar WhatsApp 2024-07-16 pukul 18.51.03_76af1637.jpg', 'image/jpeg', 0, '2026-09-09 06:35:30', '2026-09-09 06:35:30'),
+(118, 12, 4, NULL, NULL, 'chat_files/Q2sknqUIJCJCTGL1PSJbpUMDgqNaZvcbYIHzmxAv.jpg', 'Gambar WhatsApp 2024-07-16 pukul 18.51.03_76af1637.jpg', 'image/jpeg', 0, '2026-09-09 06:36:32', '2026-09-09 06:36:32'),
+(119, 12, 4, NULL, NULL, 'chat_files/nkQVNganW13R7WBatSuTyO2KChJ54YUrbpx5HWA0.docx', 'LOGBOOK KKL MINGGUAN 4.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 0, '2026-09-09 06:38:11', '2026-09-09 06:38:11'),
+(120, 12, 4, NULL, NULL, 'chat_files/iRtGtk0MF3P4np9FIgrr74ZYcM1RhisdnXxrBRWI.png', 'Screenshot 2026-09-09 142104.png', 'image/png', 0, '2026-09-09 06:45:05', '2026-09-09 06:45:05'),
+(121, 12, 3, NULL, NULL, 'chat_files/wh1jnBqNO522le3ql99tIBR5KE2fAUXrwG7QTRdi.jpg', 'Screenshot_2026-09-09-14-36-37-01_40deb401b9ffe8e1df2f1cc5ba480b12.jpg', 'image/jpeg', 0, '2026-09-09 07:00:04', '2026-09-09 07:00:04'),
+(122, 12, 4, NULL, NULL, 'chat_files/NqOx4C2Nt2OqPw1XGK7jiTErH2V57ycckZDk3zfn.docx', 'LOGBOOK KKL MINGGUAN 4.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 0, '2026-09-09 07:00:27', '2026-09-09 07:00:27'),
+(123, 12, 3, NULL, 'Test', NULL, NULL, NULL, 0, '2026-09-10 01:04:22', '2026-09-10 01:04:22'),
+(124, 12, 3, NULL, 'Alo', NULL, NULL, NULL, 0, '2026-09-10 01:04:29', '2026-09-10 01:04:29'),
+(125, 12, 3, NULL, NULL, 'chat_files/0u2ExEHmcoqBYWClIeKJ6XjTAkGhf3fBDCKFAvHE.docx', 'nkQVNganW13R7WBatSuTyO2KChJ54YUrbpx5HWA0.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 0, '2026-09-10 01:04:56', '2026-09-10 01:04:56');
 
 -- --------------------------------------------------------
 
@@ -268,8 +332,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('8KfzMu1dpTd80OGsVp1PfxLas5qWZNxvGtTyBcYv', 3, '10.200.64.75', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidjdLa2d3STBvaEk4MmplNUhJalp0Y0JkUUw0bTZnOUxkeUlWNmpWYyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMC4yMDAuNjQuODc6ODAwMC9rb25zdWx0YXNpLzkiO3M6NToicm91dGUiO3M6MTU6ImtvbnN1bHRhc2kuc2hvdyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM7fQ==', 1788767787),
-('ga31cMR4z0GEZN6VmP8D78ixMwSLhNfdVOxifuiS', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiOFpIZEFEWVg1c09WRkVPam90Sm5EV0U4UDlPWlRMTVVLZFljY3ZBQiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9rb25zdWx0YXNpLzkiO3M6NToicm91dGUiO3M6MTU6ImtvbnN1bHRhc2kuc2hvdyI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7fQ==', 1788767760);
+('qp2yCBVDD3CWFxgIC45mPPI900r4lvFYbKaOjz2Z', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiM0dONjRIeEVoaGJmaDdkdk9OTVVTanVKdTQzbGhLYmJhMVM5SjJVUCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9rb25zdWx0YXNpLzEyIjtzOjU6InJvdXRlIjtzOjE1OiJrb25zdWx0YXNpLnNob3ciO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O30=', 1789008043),
+('SFo48SdXILJaBrgfo5gJoo47IaGfTbF4sR2FyuZy', 3, '10.200.64.75', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoialpmdlNMU21Sa0EzZHJrRVpMMU5xb2JVRHNqZ1IwYXFIVXVhVVhmRiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMC4yMDAuNjQuODc6ODAwMC9rb25zdWx0YXNpLzEyIjtzOjU6InJvdXRlIjtzOjE1OiJrb25zdWx0YXNpLnNob3ciO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1789007241);
 
 -- --------------------------------------------------------
 
@@ -282,6 +346,7 @@ CREATE TABLE `users` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `role` enum('admin','konsultan','audiens') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'audiens',
+  `last_login_at` timestamp NULL DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -293,14 +358,23 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `role`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Admin', 'admin@apkbpkp.test', 'admin', NULL, '$2y$12$GxysLzYhRdPmId1q562voeJLvs//VR2rENKD1zMkHrgEWRT1oAGqS', NULL, '2026-09-01 23:16:22', '2026-09-01 23:16:22'),
-(3, 'Test', 'audiens1@test.com', 'audiens', NULL, '$2y$12$ArZi3Q4AHXb89ni7epY3Du2V4a4NsA5d/GwP.NJcrasfCVzRmyFTa', NULL, '2026-09-01 23:23:59', '2026-09-07 07:51:03'),
-(4, 'yahahah', 'konsultan1@test.com', 'konsultan', NULL, '$2y$12$OOMJipUeYp1kcRmlCOYhSepof3sEv42/VAtxaO1uWcWklwasO.57G', NULL, '2026-09-02 00:14:51', '2026-09-06 19:10:14');
+INSERT INTO `users` (`id`, `name`, `email`, `role`, `last_login_at`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
+(1, 'Admin', 'admin@apkbpkp.test', 'admin', NULL, NULL, '$2y$12$GxysLzYhRdPmId1q562voeJLvs//VR2rENKD1zMkHrgEWRT1oAGqS', NULL, '2026-09-01 23:16:22', '2026-09-01 23:16:22'),
+(3, 'Test', 'audiens1@test.com', 'audiens', NULL, NULL, '$2y$12$ArZi3Q4AHXb89ni7epY3Du2V4a4NsA5d/GwP.NJcrasfCVzRmyFTa', NULL, '2026-09-01 23:23:59', '2026-09-07 07:51:03'),
+(4, 'yahahah', 'konsultan1@test.com', 'konsultan', NULL, NULL, '$2y$12$OOMJipUeYp1kcRmlCOYhSepof3sEv42/VAtxaO1uWcWklwasO.57G', NULL, '2026-09-02 00:14:51', '2026-09-06 19:10:14'),
+(5, 'daniel', 'danielsampeluna123@gmail.com', 'audiens', NULL, NULL, '$2y$12$M0KzD/zaBS4ifZsl9LpqKuQVn3RWj6I0RmuZbckSDDm5qvF8nZTYO', 'ye7vdZrk9X7EFQ7mFO4SFT4q7XfJwwCLx33glS5n9dOagu0rNZ5n4h5oqP4J', '2026-09-08 01:09:35', '2026-09-08 01:09:35'),
+(6, 'andra 27', 'viandraremak@gmail.com', 'audiens', NULL, NULL, '$2y$12$7y1eRZkigpirn5AYvVNTae.nP8olNsLXlP6ZFyQ52X4tdfV9Wa4FK', NULL, '2026-09-08 01:37:43', '2026-09-08 01:37:43');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `activity_logs_user_id_foreign` (`user_id`);
 
 --
 -- Indexes for table `cache`
@@ -376,7 +450,8 @@ ALTER TABLE `password_reset_tokens`
 ALTER TABLE `pesans`
   ADD PRIMARY KEY (`id`),
   ADD KEY `pesans_konsultasi_id_foreign` (`konsultasi_id`),
-  ADD KEY `pesans_pengirim_id_foreign` (`pengirim_id`);
+  ADD KEY `pesans_pengirim_id_foreign` (`pengirim_id`),
+  ADD KEY `pesans_balas_ke_id_foreign` (`balas_ke_id`);
 
 --
 -- Indexes for table `sessions`
@@ -396,6 +471,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -425,29 +506,35 @@ ALTER TABLE `konsultan_profils`
 -- AUTO_INCREMENT for table `konsultasis`
 --
 ALTER TABLE `konsultasis`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `pesans`
 --
 ALTER TABLE `pesans`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD CONSTRAINT `activity_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `konsultan_profils`
@@ -467,6 +554,7 @@ ALTER TABLE `konsultasis`
 -- Constraints for table `pesans`
 --
 ALTER TABLE `pesans`
+  ADD CONSTRAINT `pesans_balas_ke_id_foreign` FOREIGN KEY (`balas_ke_id`) REFERENCES `pesans` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `pesans_konsultasi_id_foreign` FOREIGN KEY (`konsultasi_id`) REFERENCES `konsultasis` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `pesans_pengirim_id_foreign` FOREIGN KEY (`pengirim_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
